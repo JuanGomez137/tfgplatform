@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+<title>Preguntas</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="container mt-4">
+
+<h2 th:text="'Preguntas de ' + ${ejercicio.titulo}"></h2>
+
+<a th:href="@{/profesor/ejercicios/{id}/preguntas/crear(id=${ejercicio.id})}"
+class="btn btn-primary mb-3">
+
+Añadir pregunta
+
+</a>
+
+<table class="table table-striped">
+
+<thead>
+
+<tr>
+<th>ID</th>
+<th>Enunciado</th>
+<th>Tipo</th>
+<th>Puntuación</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr th:each="pregunta : ${preguntas}">
+
+<td th:text="${pregunta.id}"></td>
+
+<td th:text="${pregunta.enunciado}"></td>
+
+<td th:text="${pregunta.tipo}"></td>
+
+<td th:text="${pregunta.puntuacionMaxima}"></td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+<a th:href="@{/profesor/ejercicios/{id}(id=${ejercicio.id})}" 
+class="btn btn-secondary">
+
+Volver al ejercicio
+
+</a>
+
+</div>
+
+</body>
+
+</html>

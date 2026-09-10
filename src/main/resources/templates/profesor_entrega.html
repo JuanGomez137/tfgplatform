@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de entrega</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <h2>Entrega del alumno</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><b>Alumno:</b> <span th:text="${entrega.alumno.nombre}"></span></p>
+            <p><b>Ejercicio:</b> <span th:text="${entrega.ejercicio.titulo}"></span></p>
+            <p><b>Fecha entrega:</b> <span th:text="${#temporals.format(entrega.fechaEntrega, 'dd/MM/yyyy HH:mm')}"></span></p>
+            <p><b>Nota total:</b> <span th:text="${entrega.notaTotal}"></span></p>
+            <p><b>Estado:</b> <span th:text="${entrega.estado}"></span></p>
+        </div>
+    </div>
+
+    <h4>Respuestas</h4>
+
+    <div th:each="respuesta : ${respuestas}" class="card mb-3">
+        <div class="card-body">
+
+            <p class="fw-bold" th:text="${respuesta.pregunta.enunciado}"></p>
+
+            <!-- NUMERICO -->
+            <div th:if="${respuesta.pregunta.tipo.name() == 'NUMERICO'}">
+                <p>Respuesta del alumno: <b th:text="${respuesta.respuestaTexto}"></b></p>
+                <p>Respuesta correcta: <b th:text="${respuesta.pregunta.valorCorrecto}"></b></p>
+                <p>Puntuación:
+                    <span class="badge bg-secondary"
+                          th:text="${respuesta.puntuacionObtenida} + ' / ' + ${respuesta.pregunta.puntuacionMaxima}">
+                    </span>
+                </p>
+            </div>
+
+            <!-- TABLA -->
+            <div th:if="${respuesta.pregunta.tipo.name() == 'TABLA'}">
+                <div class="tablaRespuesta"
+                     th:data-valores="${respuesta.respuestaJson}"
+                     th:data-config="${respuesta.pregunta.configuracionJson}">
+                </div>
+                <p class="mt-2">Puntuación:
+                    <span class="badge bg-secondary"
+                          th:text="${respuesta.puntuacionObtenida} + ' / ' + ${respuesta.pregunta.puntuacionMaxima}">
+                    </span>
+                </p>
+            </div>
+
+            <!-- TEXTO -->
+            <div th:if="${respuesta.pregunta.tipo.name() == 'TEXTO'}">
+                <p>Respuesta del alumno:</p>
+                <div class="border rounded p-2 bg-white mb-2" th:text="${respuesta.respuestaTexto}"></div>
+                <p>Puntuación IA:
+                    <span class="badge bg-secondary"
+                          th:text="${respuesta.puntuacionObtenida} + ' / ' + ${respuesta.pregunta.puntuacionMaxima}">
+                    </span>
+                </p>
+                <div th:if="${respuesta.feedbackIa}" class="alert alert-info py-2 mt-1">
+                    <small><b>Feedback IA:</b> <span th:text="${respuesta.feedbackIa}"></span></small>
+                </div>
+                <!-- Reclamación pendiente -->
+                <div th:if="${reclamacionesPorRespuesta != null and reclamacionesPorRespuesta[respuesta.id] != null and !reclamacionesPorRespuesta[respuesta.id].resuelta}"
+                     class="card border-warning mt-3">
+                    <div class="card-header bg-warning text-dark fw-bold">
+                        ⚠ Reclamación del alumno
+                    </div>
+                    <div class="card-body">
+                        <p><b>Comentario del alumno:</b> <span th:text="${reclamacionesPorRespuesta[respuesta.id].comentario}"></span></p>
+                        <form th:action="@{'/profesor/reclamacion/' + ${reclamacionesPorRespuesta[respuesta.id].id} + '/resolver'}" method="post">
+                            <input type="hidden" name="entregaId" th:value="${entrega.id}">
+                            <div class="mb-2">
+                                <label class="form-label fw-bold">Nueva puntuación manual</label>
+                                <input type="number" step="0.01" name="nuevaNota" class="form-control"
+                                       th:value="${respuesta.puntuacionObtenida}"
+                                       th:max="${respuesta.pregunta.puntuacionMaxima}" min="0" required style="max-width:150px">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Comentario para el alumno (opcional)</label>
+                                <textarea name="comentarioProfesor" class="form-control" rows="2" placeholder="Explica tu corrección..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-sm">Resolver reclamación</button>
+                        </form>
+                    </div>
+                </div>
+                <!-- Reclamación ya resuelta -->
+                <div th:if="${reclamacionesPorRespuesta != null and reclamacionesPorRespuesta[respuesta.id] != null and reclamacionesPorRespuesta[respuesta.id].resuelta}"
+                     class="alert alert-success mt-2 py-2">
+                    <small><b>Reclamación resuelta.</b>
+                        <span th:if="${reclamacionesPorRespuesta[respuesta.id].comentarioProfesor != null}">
+                            Respuesta: <span th:text="${reclamacionesPorRespuesta[respuesta.id].comentarioProfesor}"></span>
+                        </span>
+                    </small>
+                </div>
+            </div>
+
+            <!-- IMAGEN -->
+            <div th:if="${respuesta.pregunta.tipo.name() == 'IMAGEN'}">
+                <p>Imagen subida por el alumno:</p>
+                <img th:src="@{'/uploads/' + ${respuesta.imagenUrl}}"
+                     class="img-fluid rounded border" style="max-width:500px">
+                <p class="mt-2">Puntuación IA:
+                    <span class="badge bg-secondary"
+                          th:text="${respuesta.puntuacionObtenida} + ' / ' + ${respuesta.pregunta.puntuacionMaxima}">
+                    </span>
+                </p>
+                <div th:if="${respuesta.feedbackIa}" class="alert alert-info py-2 mt-1">
+                    <small><b>Feedback IA:</b> <span th:text="${respuesta.feedbackIa}"></span></small>
+                </div>
+
+                <!-- Reclamación pendiente -->
+                <div th:if="${reclamacionesPorRespuesta != null and reclamacionesPorRespuesta[respuesta.id] != null and !reclamacionesPorRespuesta[respuesta.id].resuelta}"
+                     class="card border-warning mt-3">
+                    <div class="card-header bg-warning text-dark fw-bold">
+                        ⚠ Reclamación del alumno
+                    </div>
+                    <div class="card-body">
+                        <p><b>Comentario del alumno:</b> <span th:text="${reclamacionesPorRespuesta[respuesta.id].comentario}"></span></p>
+                        <form th:action="@{'/profesor/reclamacion/' + ${reclamacionesPorRespuesta[respuesta.id].id} + '/resolver'}" method="post">
+                            <input type="hidden" name="entregaId" th:value="${entrega.id}">
+                            <div class="mb-2">
+                                <label class="form-label fw-bold">Nueva puntuación manual</label>
+                                <input type="number" step="0.01" name="nuevaNota" class="form-control"
+                                       th:value="${respuesta.puntuacionObtenida}"
+                                       th:max="${respuesta.pregunta.puntuacionMaxima}" min="0" required style="max-width:150px">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Comentario para el alumno (opcional)</label>
+                                <textarea name="comentarioProfesor" class="form-control" rows="2" placeholder="Explica tu corrección..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-sm">Resolver reclamación</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Reclamación ya resuelta -->
+                <div th:if="${reclamacionesPorRespuesta != null and reclamacionesPorRespuesta[respuesta.id] != null and reclamacionesPorRespuesta[respuesta.id].resuelta}"
+                     class="alert alert-success mt-2 py-2">
+                    <small><b>Reclamación resuelta.</b>
+                        <span th:if="${reclamacionesPorRespuesta[respuesta.id].comentarioProfesor != null}">
+                            Respuesta: <span th:text="${reclamacionesPorRespuesta[respuesta.id].comentarioProfesor}"></span>
+                        </span>
+                    </small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <a href="/profesor/entregas" class="btn btn-secondary">Volver</a>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".tablaRespuesta").forEach(function (div) {
+        var configRaw = div.dataset.config;
+        var valoresRaw = div.dataset.valores;
+
+        if (!configRaw) return;
+
+        var config = JSON.parse(configRaw);
+        var filas = config.filas;
+        var columnas = config.columnas;
+        var cabCol = config.cabecerasColumnas || [];
+        var cabFil = config.cabecerasFilas || [];
+        var correctas = config.respuestasCorrectas || [];
+        var tolerancia = config.tolerancia || 0;
+
+        var valores = null;
+        if (valoresRaw && valoresRaw !== 'null') {
+            try { valores = JSON.parse(valoresRaw); } catch (e) {}
+        }
+
+        var html = "<table class='table table-bordered table-sm mt-2'>";
+        html += "<thead class='table-light'><tr><th></th>";
+        for (var j = 0; j < columnas; j++) {
+            html += "<th>" + (cabCol[j] || "Col " + (j + 1)) + "</th>";
+        }
+        html += "</tr></thead><tbody>";
+
+        for (var i = 0; i < filas; i++) {
+            html += "<tr><th class='table-light'>" + (cabFil[i] || "Fila " + (i + 1)) + "</th>";
+            for (var j = 0; j < columnas; j++) {
+                var correcto = correctas[i] ? correctas[i][j] : "";
+                if (valores) {
+                    var alumno = valores[i] !== undefined ? valores[i][j] : "";
+                    var diferencia = Math.abs(Number(alumno) - Number(correcto));
+                    var colorClass = diferencia <= tolerancia ? "table-success" : "table-danger";
+                    html += "<td class='" + colorClass + "'>"
+                          + alumno
+                          + "<br><small class='text-muted'>Correcto: " + correcto + "</small>"
+                          + "</td>";
+                } else {
+                    html += "<td><small class='text-muted'>Correcto: " + correcto + "</small></td>";
+                }
+            }
+            html += "</tr>";
+        }
+        html += "</tbody></table>";
+
+        if (!valores) {
+            html = "<div class='alert alert-warning py-1 px-2 small mb-2'>Entrega antigua: no se guardaron los valores individuales. Se muestra solo la tabla de referencia.</div>" + html;
+        }
+
+        div.innerHTML = html;
+    });
+});
+</script>
+
+</body>
+</html>

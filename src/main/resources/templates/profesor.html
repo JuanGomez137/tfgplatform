@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+<meta charset="UTF-8">
+<title>Panel Profesor</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark">
+<div class="container-fluid">
+
+<span class="navbar-brand">Plataforma de Prácticas</span>
+
+<a class="btn btn-outline-light" href="/logout">
+Cerrar sesión
+</a>
+
+</div>
+</nav>
+
+<div class="container mt-4">
+
+<h2 class="mb-4">Panel del Profesor</h2>
+
+<div class="row g-4">
+
+<!-- CREAR GRUPO -->
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<h5 class="card-title">Grupos</h5>
+
+<p class="card-text">
+Crear y gestionar grupos de alumnos
+</p>
+
+<a href="/profesor/grupos" class="btn btn-primary w-100">
+Gestionar grupos
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- CREAR EJERCICIO -->
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<h5 class="card-title">Ejercicios</h5>
+
+<p class="card-text">
+Crear ejercicios y asignarlos a grupos
+</p>
+
+<a href="/profesor/ejercicios" class="btn btn-primary w-100">
+Gestionar ejercicios
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- VER ENTREGAS -->
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<h5 class="card-title">Entregas</h5>
+
+<p class="card-text">
+Ver entregas y calificaciones de alumnos
+</p>
+
+<a href="/profesor/entregas" class="btn btn-primary w-100">
+Ver entregas
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- RECLAMACIONES -->
+
+<div class="col-md-4">
+
+<div class="card shadow border-warning">
+
+<div class="card-body">
+
+<h5 class="card-title">Reclamaciones</h5>
+
+<p class="card-text">
+Revisar correcciones de imagen disputadas por alumnos
+</p>
+
+<a href="/profesor/reclamaciones" class="btn btn-warning w-100">
+Ver reclamaciones
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<hr class="my-5">
+
+<div class="row">
+
+<div class="col-md-12">
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<h5>Actividad reciente</h5>
+
+<p class="text-muted">
+Aquí aparecerán entregas recientes y solicitudes de revisión.
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

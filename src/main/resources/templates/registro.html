@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<title>Registro</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+<div class="container">
+
+<div class="row justify-content-center mt-5">
+
+<div class="col-md-5">
+
+<div class="card shadow">
+
+<div class="card-body">
+
+<h3 class="text-center mb-4">Crear cuenta</h3>
+
+<div class="alert alert-info py-2">
+    <b>Acceso restringido a correos UPM:</b>
+    <ul class="mb-0 mt-1 small">
+        <li>Alumnos: <code>usuario@alumnos.upm.es</code></li>
+        <li>Profesores: <code>usuario@upm.es</code></li>
+    </ul>
+</div>
+
+<!-- Email confirmation pending -->
+<div th:if="${pendienteConfirmacion}" class="alert alert-success">
+    <b>¡Registro completado!</b> Hemos enviado un enlace de confirmación a tu correo.
+    Por favor, revisa tu bandeja de entrada (y la carpeta de spam) para activar tu cuenta.
+</div>
+
+<div th:if="${error}" class="alert alert-danger">
+    <span th:text="${error}"></span>
+</div>
+
+<form th:if="${pendienteConfirmacion == null}" action="/registro" method="post">
+
+<div class="mb-3">
+
+<label class="form-label">Nombre</label>
+
+<input type="text" name="nombre" class="form-control" th:value="${usuario?.nombre}" required>
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">Email</label>
+
+<input type="email" name="email" class="form-control" th:value="${usuario?.email}" required>
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">Contraseña</label>
+
+<input type="password" name="password" class="form-control" required minlength="6">
+
+</div>
+
+<button type="submit" class="btn btn-primary w-100">
+
+Registrarse
+
+</button>
+
+</form>
+
+<hr>
+
+<div class="text-center">
+
+<a href="/login">Ya tengo cuenta</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

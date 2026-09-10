@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Mi entrega</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+<div class="container mt-4">
+
+    <h2>Mi entrega</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><b>Ejercicio:</b> <span th:text="${entrega.ejercicio.titulo}"></span></p>
+            <p><b>Fecha:</b> <span th:text="${#temporals.format(entrega.fechaEntrega, 'dd/MM/yyyy HH:mm')}"></span></p>
+            <p><b>Nota:</b> <span th:text="${entrega.notaTotal}"></span></p>
+        </div>
+    </div>
+
+    <h4>Respuestas</h4>
+
+    <div th:each="respuesta : ${respuestas}" class="card mb-3">
+        <div class="card-body">
+
+            <p class="fw-bold" th:text="${respuesta.pregunta.enunciado}"></p>
+
+            <!-- NUMERICO -->
+            <div th:if="${respuesta.pregunta.tipo.name() == 'NUMERICO'}">
+                <p>Tu respuesta: <b th:text="${respuesta.respuestaTexto}"></b></p>
+                <p>Puntuación:
+                    <span class="badge bg-secondary"
+                          th:text="${respuesta.puntuacionObtenida} + ' / ' + ${respuesta.pregunta.puntuacionMaxima}">
+                    </span>
+                </p>
+            </div>
+
+            <!-- TABLA -->
+            <div th:if="${respuesta.pregunta.tipo.name() == 'TABLA'}">
+                <div class="tablaRespuesta"
+                     th:data-valores="${respuesta.respuestaJson}"
+                     th:data-config="${respuesta.pregunta.configuracionJson}">
+                </div>
+                <p class="mt-2">Puntuación:
+                    <span class="badge bg-secondary"
+                          th:text="${respuesta.puntuacionObtenida} + ' / ' + ${respuesta.pregunta.puntuacionMaxima}">
+                    </span>
+                </p>
+            </div>
+
+            <!-- TEXTO -->
+            <div th:if="${respuesta.pregunta.tipo.name() == 'TEXTO'}">
+                <p>Tu respuesta:</p>
+                <div class="border rounded p-2 bg-white mb-2" th:text="${respuesta.respuestaTexto}"></div>
+                <p>Puntuación:
+                    <span class="badge bg-secondary"
+                          th:text="${respuesta.puntuacionObtenida} + ' / ' + ${respuesta.pregunta.puntuacionMaxima}">
+                    </span>
+                </p>
+                <div th:if="${respuesta.feedbackIa}" class="alert alert-info mt-2 py-2">
+                    <small><b>Evaluación IA:</b> <span th:text="${respuesta.feedbackIa}"></span></small>
+                </div>
+                <!-- Botón reclamar -->
+                <div th:if="${reclamacionesPorRespuesta != null and reclamacionesPorRespuesta[respuesta.id] == null}" class="mt-2">
+                    <button class="btn btn-outline-warning btn-sm"
+                            type="button"
+                            th:data-entrega="${entrega.id}"
+                            th:data-respuesta="${respuesta.id}"
+                            onclick="abrirModalReclamacion(this)">
+                        Reclamar corrección
+                    </button>
+                </div>
+                <div th:if="${reclamacionesPorRespuesta != null and reclamacionesPorRespuesta[respuesta.id] != null}" class="mt-2">
+                    <span th:if="${!reclamacionesPorRespuesta[respuesta.id].resuelta}" class="badge bg-warning text-dark">Reclamación enviada — pendiente de revisión</span>
+                    <span th:if="${reclamacionesPorRespuesta[respuesta.id].resuelta}" class="badge bg-success">Reclamación resuelta</span>
+                    <div th:if="${reclamacionesPorRespuesta[respuesta.id].resuelta and reclamacionesPorRespuesta[respuesta.id].comentarioProfesor != null}"
+                         class="alert alert-success mt-1 py-1">
+                        <small><b>Respuesta del profesor:</b> <span th:text="${reclamacionesPorRespuesta[respuesta.id].comentarioProfesor}"></span></small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IMAGEN -->
+            <div th:if="${respuesta.pregunta.tipo.name() == 'IMAGEN'}">
+                <img th:src="@{'/uploads/' + ${respuesta.imagenUrl}}"
+                     class="img-fluid rounded border" style="max-width:400px">
+                <p class="mt-2">Puntuación:
+                    <span class="badge bg-secondary"
+                          th:text="${respuesta.puntuacionObtenida} + ' / ' + ${respuesta.pregunta.puntuacionMaxima}">
+                    </span>
+                </p>
+                <div th:if="${respuesta.feedbackIa}" class="alert alert-info mt-2 py-2">
+                    <small><b>Evaluación IA:</b> <span th:text="${respuesta.feedbackIa}"></span></small>
+                </div>
+
+                <!-- Botón reclamar (solo si no hay reclamación ya enviada) -->
+                <div th:if="${reclamacionesPorRespuesta != null and reclamacionesPorRespuesta[respuesta.id] == null}" class="mt-2">
+                    <button class="btn btn-outline-warning btn-sm"
+                            type="button"
+                            th:data-entrega="${entrega.id}"
+                            th:data-respuesta="${respuesta.id}"
+                            onclick="abrirModalReclamacion(this)">
+                        Reclamar corrección
+                    </button>
+                </div>
+                <div th:if="${reclamacionesPorRespuesta != null and reclamacionesPorRespuesta[respuesta.id] != null}" class="mt-2">
+                    <span th:if="${!reclamacionesPorRespuesta[respuesta.id].resuelta}" class="badge bg-warning text-dark">Reclamación enviada — pendiente de revisión</span>
+                    <span th:if="${reclamacionesPorRespuesta[respuesta.id].resuelta}" class="badge bg-success">Reclamación resuelta</span>
+                    <div th:if="${reclamacionesPorRespuesta[respuesta.id].resuelta and reclamacionesPorRespuesta[respuesta.id].comentarioProfesor != null}"
+                         class="alert alert-success mt-1 py-1">
+                        <small><b>Respuesta del profesor:</b> <span th:text="${reclamacionesPorRespuesta[respuesta.id].comentarioProfesor}"></span></small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <a href="/alumno/entregas" class="btn btn-secondary">Volver</a>
+
+</div>
+
+<!-- Modal reclamación -->
+<div class="modal fade" id="modalReclamacion" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formReclamacion" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reclamar corrección de IA</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Explica por qué crees que la corrección automática es incorrecta. El profesor revisará tu respuesta manualmente.</p>
+                    <textarea name="comentario" class="form-control" rows="4" placeholder="Escribe tu reclamación..." required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Enviar reclamación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function abrirModalReclamacion(btn) {
+    var entregaId = btn.dataset.entrega;
+    var respuestaId = btn.dataset.respuesta;
+    document.getElementById("formReclamacion").action = "/alumno/entrega/" + entregaId + "/reclamar/" + respuestaId;
+    new bootstrap.Modal(document.getElementById("modalReclamacion")).show();
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".tablaRespuesta").forEach(function (div) {
+        var configRaw = div.dataset.config;
+        var valoresRaw = div.dataset.valores;
+        if (!configRaw) return;
+
+        var config = JSON.parse(configRaw);
+        var filas = config.filas;
+        var columnas = config.columnas;
+        var cabCol = config.cabecerasColumnas || [];
+        var cabFil = config.cabecerasFilas || [];
+        var correctas = config.respuestasCorrectas || [];
+        var tolerancia = config.tolerancia || 0;
+
+        var valores = null;
+        if (valoresRaw && valoresRaw !== 'null') {
+            try { valores = JSON.parse(valoresRaw); } catch (e) {}
+        }
+
+        var html = "<table class='table table-bordered table-sm mt-2'>";
+        html += "<thead class='table-light'><tr><th></th>";
+        for (var j = 0; j < columnas; j++) {
+            html += "<th>" + (cabCol[j] || "Col " + (j + 1)) + "</th>";
+        }
+        html += "</tr></thead><tbody>";
+
+        for (var i = 0; i < filas; i++) {
+            html += "<tr><th class='table-light'>" + (cabFil[i] || "Fila " + (i + 1)) + "</th>";
+            for (var j = 0; j < columnas; j++) {
+                var correcto = correctas[i] ? correctas[i][j] : "";
+                if (valores) {
+                    var alumno = valores[i] !== undefined ? valores[i][j] : "";
+                    var diferencia = Math.abs(Number(alumno) - Number(correcto));
+                    var colorClass = diferencia <= tolerancia ? "table-success" : "table-danger";
+                    html += "<td class='" + colorClass + "'>" + alumno + "</td>";
+                } else {
+                    html += "<td>-</td>";
+                }
+            }
+            html += "</tr>";
+        }
+        html += "</tbody></table>";
+        div.innerHTML = html;
+    });
+});
+</script>
+
+</body>
+</html>

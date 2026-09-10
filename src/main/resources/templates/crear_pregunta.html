@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <title>Crear pregunta</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body class="container mt-4">
+
+    <h2>Crear pregunta</h2>
+
+    <form th:action="@{/profesor/ejercicios/{id}/preguntas/crear(id=${ejercicioId})}" method="post">
+
+        <!-- ENUNCIADO -->
+
+        <div class="mb-3">
+
+            <label>Enunciado</label>
+
+            <textarea name="enunciado" class="form-control" required></textarea>
+
+        </div>
+
+        <!-- TIPO -->
+
+        <div class="mb-3">
+
+            <label>Tipo de pregunta</label>
+
+            <select name="tipo" class="form-control" id="tipoPregunta">
+
+                <option value="NUMERICO">Numérico</option>
+                <option value="TABLA">Tabla</option>
+                <option value="IMAGEN">Imagen</option>
+                <option value="TEXTO">Texto libre (corregido por IA)</option>
+
+            </select>
+
+        </div>
+
+        <!-- PUNTUACIÓN -->
+
+        <div class="mb-3">
+
+            <label>Puntuación máxima</label>
+
+            <input type="number"
+                   step="0.1"
+                   name="puntuacionMaxima"
+                   class="form-control"
+                   required>
+
+        </div>
+
+        <!-- CONFIG NUMÉRICO -->
+
+        <div id="configNumerico">
+
+            <div class="mb-3">
+
+                <label>Valor correcto</label>
+
+                <input type="number"
+                       step="any"
+                       name="valorCorrecto"
+                       class="form-control">
+
+            </div>
+
+            <div class="mb-3">
+
+                <label>Tolerancia (%)</label>
+
+                <input type="number"
+                       step="any"
+                       name="tolerancia"
+                       class="form-control">
+
+            </div>
+
+        </div>
+
+        <!-- CONFIG TABLA -->
+
+        <div id="configTabla" style="display:none">
+
+            <h4>Configuración de tabla</h4>
+
+            <div class="row">
+
+                <div class="col">
+
+                    <label>Filas</label>
+
+                    <input type="number"
+                           id="filas"
+                           name="filas"
+                           class="form-control">
+
+                </div>
+
+                <div class="col">
+
+                    <label>Columnas</label>
+
+                    <input type="number"
+                           id="columnas"
+                           name="columnas"
+                           class="form-control">
+
+                </div>
+
+            </div>
+
+            <br>
+
+            <!-- tolerancia tabla -->
+
+            <div class="mb-3">
+
+                <label>Tolerancia para valores de la tabla</label>
+
+                <input type="number"
+                       step="any"
+                       name="toleranciaTabla"
+                       class="form-control"
+                       placeholder="Ej: 0.01">
+
+            </div>
+
+            <button type="button"
+                    class="btn btn-secondary"
+                    onclick="generarTabla()">
+
+                Generar tabla
+
+            </button>
+
+            <br><br>
+
+            <div id="tablaProfesor"></div>
+
+        </div>
+
+        <!-- RÚBRICA DE CORRECCIÓN (solo TEXTO e IMAGEN) -->
+        <div id="configRubrica" style="display:none" class="mb-3">
+            <label class="form-label fw-semibold">
+                Rúbrica / Respuesta modelo
+                <span class="text-muted fw-normal small">(opcional, mejora la corrección IA)</span>
+            </label>
+            <textarea name="rubrica"
+                      class="form-control"
+                      rows="4"
+                      placeholder="Describe los criterios de corrección y/o escribe una respuesta modelo correcta. La IA usará esto como guía para puntuar al alumno."></textarea>
+            <div class="form-text">
+                Ejemplo: <em>"Una respuesta correcta debe mencionar X, Y y Z. La ley de Ohm establece que V=IR.
+                Se valora el razonamiento aunque el resultado numérico tenga pequeñas variaciones."</em>
+            </div>
+        </div>
+
+        <button class="btn btn-success">
+
+            Crear pregunta
+
+        </button>
+
+    </form>
+
+    <script>
+
+        const selector = document.getElementById("tipoPregunta");
+        const configTabla = document.getElementById("configTabla");
+        const configNumerico = document.getElementById("configNumerico");
+        const configRubrica = document.getElementById("configRubrica");
+
+        function actualizarVistas() {
+            const tipo = selector.value;
+            configTabla.style.display    = (tipo === "TABLA")    ? "block" : "none";
+            configNumerico.style.display = (tipo === "NUMERICO") ? "block" : "none";
+            configRubrica.style.display  = (tipo === "TEXTO" || tipo === "IMAGEN") ? "block" : "none";
+        }
+
+        selector.addEventListener("change", actualizarVistas);
+        actualizarVistas(); // estado inicial
+
+        function generarTabla(){
+
+            let filas = document.getElementById("filas").value;
+            let columnas = document.getElementById("columnas").value;
+
+            let html = "<table class='table table-bordered'>";
+
+            /* CABECERAS COLUMNAS */
+
+            html += "<tr>";
+
+            html += "<th></th>";
+
+            for(let j = 0; j < columnas; j++){
+
+                html += "<th>";
+                html += "<input type='text' class='form-control' name='col_" + j + "' placeholder='Columna'>";
+                html += "</th>";
+
+            }
+
+            html += "</tr>";
+
+            /* FILAS */
+
+            for(let i = 0; i < filas; i++){
+
+                html += "<tr>";
+
+                /* CABECERA FILA */
+
+                html += "<th>";
+                html += "<input type='text' class='form-control' name='fila_" + i + "' placeholder='Fila'>";
+                html += "</th>";
+
+                /* CELDAS */
+
+                for(let j = 0; j < columnas; j++){
+
+                    html += "<td>";
+
+                    html += "<input type='number' step='any' class='form-control' name='celda_" + i + "_" + j + "'>";
+
+                    html += "</td>";
+
+                }
+
+                html += "</tr>";
+
+            }
+
+            html += "</table>";
+
+            document.getElementById("tablaProfesor").innerHTML = html;
+
+        }
+
+    </script>
+
+</body>
+
+</html>

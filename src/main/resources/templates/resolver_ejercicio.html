@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <title>Resolver ejercicio</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-4">
+
+        <h2 th:text="${ejercicio.titulo}"></h2>
+
+        <p th:text="${ejercicio.descripcion}"></p>
+
+        <hr>
+
+        <!-- Alerta de plazo vencido -->
+        <div th:if="${error}" class="alert alert-danger">
+            <b>⛔ <span th:text="${error}"></span></b>
+            <a href="/alumno/ejercicios" class="btn btn-sm btn-secondary ms-3">Volver</a>
+        </div>
+
+        <form th:if="${error == null}" action="/alumno/ejercicio/enviar" method="post" enctype="multipart/form-data">
+
+            <input type="hidden"
+                   name="ejercicioId"
+                   th:value="${ejercicio.id}">
+
+            <div th:each="pregunta : ${preguntas}" class="card mb-3">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        Pregunta
+                    </h5>
+
+                    <p th:text="${pregunta.enunciado}"></p>
+
+                    <!-- NUMERICO -->
+
+                    <div th:if="${pregunta.tipo == T(com.juan.tfgplatform.model.Pregunta.TipoPregunta).NUMERICO}">
+
+                        <input type="number"
+                               step="any"
+                               class="form-control"
+                               th:name="'respuesta_' + ${pregunta.id}"
+                               placeholder="Introduce tu respuesta">
+
+                    </div>
+
+                    <!-- TEXTO -->
+                    <div th:if="${pregunta.tipo == T(com.juan.tfgplatform.model.Pregunta.TipoPregunta).TEXTO}">
+                        <label class="form-label">Tu respuesta</label>
+                        <textarea class="form-control"
+                                  th:name="'respuesta_' + ${pregunta.id}"
+                                  rows="5"
+                                  placeholder="Escribe tu respuesta aquí..."
+                                  required></textarea>
+                        <div class="form-text text-muted">La respuesta será evaluada automáticamente por IA.</div>
+                    </div>
+
+                    <!-- IMAGEN -->
+
+                    <div th:if="${pregunta.tipo == T(com.juan.tfgplatform.model.Pregunta.TipoPregunta).IMAGEN}">
+                        <label class="form-label">Sube tu imagen de respuesta</label>
+                        <input type="file"
+                               class="form-control"
+                               th:name="'imagen_' + ${pregunta.id}"
+                               accept="image/*"
+                               required>
+                        <div class="form-text text-muted">Formatos aceptados: JPG, PNG, WEBP (máx. 20 MB)</div>
+                    </div>
+
+                    <!-- TABLA -->
+
+                    <div th:if="${pregunta.tipo == T(com.juan.tfgplatform.model.Pregunta.TipoPregunta).TABLA}">
+
+                        <div class="tablaPregunta"
+                             th:data-id="${pregunta.id}">
+
+                            <script type="application/json"
+                                    th:id="'config_'+${pregunta.id}"
+                                    th:utext="${pregunta.configuracionJson}">
+                            </script>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="mt-3">
+
+                <button type="submit" class="btn btn-success" id="btnEnviar"
+                        onclick="this.disabled=true; this.textContent='Enviando…'; this.form.submit();">
+                    Enviar ejercicio
+                </button>
+
+                <a href="/alumno/ejercicios" class="btn btn-secondary">
+                    Volver
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function(){
+
+            document.querySelectorAll(".tablaPregunta").forEach(div => {
+
+                let preguntaId = div.dataset.id;
+
+                let configScript = document.getElementById("config_"+preguntaId);
+
+                if(!configScript || configScript.textContent.trim() === ""){
+                    return;
+                }
+
+                let config = JSON.parse(configScript.textContent);
+
+                let filas = config.filas;
+                let columnas = config.columnas;
+
+                let cabecerasColumnas = config.cabecerasColumnas || [];
+                let cabecerasFilas = config.cabecerasFilas || [];
+
+                let html = "<table class='table table-bordered'>";
+
+                html += "<tr><th></th>";
+
+                for(let j=0;j<columnas;j++){
+                    html += "<th>"+(cabecerasColumnas[j] || "")+"</th>";
+                }
+
+                html += "</tr>";
+
+                for(let i=0;i<filas;i++){
+
+                    html += "<tr>";
+
+                    html += "<th>"+(cabecerasFilas[i] || "")+"</th>";
+
+                    for(let j=0;j<columnas;j++){
+
+                        html += "<td>";
+
+                        html += "<input type='number' step='any' class='form-control' name='respuesta_"+preguntaId+"_"+i+"_"+j+"'>";
+
+                        html += "</td>";
+
+                    }
+
+                    html += "</tr>";
+
+                }
+
+                html += "</table>";
+
+                div.insertAdjacentHTML("beforeend", html);
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>

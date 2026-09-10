@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Reclamaciones pendientes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <h2>Reclamaciones pendientes</h2>
+    <p class="text-muted">Ejercicios de imagen en los que los alumnos han solicitado revisión manual de la corrección IA.</p>
+
+    <div th:if="${#lists.isEmpty(reclamaciones)}" class="alert alert-success">
+        No hay reclamaciones pendientes.
+    </div>
+
+    <div th:each="rec : ${reclamaciones}" class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark">
+            <b th:text="${rec.entrega.alumno.nombre}"></b>
+            &nbsp;—&nbsp;
+            <span th:text="${rec.entrega.ejercicio.titulo}"></span>
+            <small class="ms-3 text-muted" th:text="${#temporals.format(rec.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></small>
+        </div>
+        <div class="card-body">
+            <p><b>Pregunta:</b> <span th:text="${rec.respuesta.pregunta.enunciado}"></span></p>
+            <p><b>Puntuación IA:</b>
+                <span th:text="${rec.respuesta.puntuacionObtenida} + ' / ' + ${rec.respuesta.pregunta.puntuacionMaxima}"></span>
+            </p>
+            <div th:if="${rec.respuesta.feedbackIa}" class="alert alert-info py-1 mb-2">
+                <small><b>Feedback IA:</b> <span th:text="${rec.respuesta.feedbackIa}"></span></small>
+            </div>
+            <p><b>Comentario del alumno:</b> <span th:text="${rec.comentario}"></span></p>
+
+            <div th:if="${rec.respuesta.imagenUrl != null}" class="mb-3">
+                <img th:src="@{'/uploads/' + ${rec.respuesta.imagenUrl}}"
+                     class="img-fluid rounded border" style="max-width:500px">
+            </div>
+
+            <a th:href="@{'/profesor/entrega/' + ${rec.entrega.id}}"
+               class="btn btn-primary btn-sm">Ver entrega completa y resolver</a>
+        </div>
+    </div>
+
+    <a href="/profesor" class="btn btn-secondary mt-2">Volver</a>
+
+</div>
+
+</body>
+</html>

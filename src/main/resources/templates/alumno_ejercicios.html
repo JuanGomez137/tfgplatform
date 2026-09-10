@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ejercicios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-5">
+
+        <div th:if="${param.errorArchivo}" class="alert alert-danger alert-dismissible fade show">
+            El archivo es demasiado grande. El límite máximo es <strong>20 MB</strong>. Elige una imagen más pequeña.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <h2>Ejercicios disponibles</h2>
+
+        <table class="table table-striped mt-4 align-middle">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>Título</th>
+                    <th>Descripción</th>
+                    <th>Fecha límite</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr th:each="ejercicio : ${ejercicios}">
+
+                    <td th:text="${ejercicio.titulo}"></td>
+                    <td th:text="${ejercicio.descripcion}"></td>
+
+                    <!-- Fecha límite -->
+                    <td>
+                        <span th:if="${ejercicio.fechaLimite != null}">
+                            <span th:text="${#temporals.format(ejercicio.fechaLimite, 'dd/MM/yyyy HH:mm')}"></span>
+                            <br>
+                            <span class="badge bg-danger"
+                                  th:if="${#temporals.createNow().isAfter(ejercicio.fechaLimite)}">
+                                Plazo cerrado
+                            </span>
+                            <span class="badge bg-warning text-dark"
+                                  th:if="${!#temporals.createNow().isAfter(ejercicio.fechaLimite)}
+                                          and ${#temporals.createNow().plusDays(1).isAfter(ejercicio.fechaLimite)}">
+                                Cierra hoy
+                            </span>
+                        </span>
+                        <span th:if="${ejercicio.fechaLimite == null}" class="text-muted small">Sin límite</span>
+                    </td>
+
+                    <!-- Estado -->
+                    <td>
+                        <span class="badge bg-success"
+                              th:if="${ejerciciosEntregados.contains(ejercicio.id)}">Enviado</span>
+                        <span class="badge bg-danger"
+                              th:if="${!ejerciciosEntregados.contains(ejercicio.id)}
+                                      and ${ejercicio.fechaLimite != null}
+                                      and ${#temporals.createNow().isAfter(ejercicio.fechaLimite)}">Vencido</span>
+                        <span class="badge bg-warning text-dark"
+                              th:if="${!ejerciciosEntregados.contains(ejercicio.id)}
+                                      and ${(ejercicio.fechaLimite == null) or (!#temporals.createNow().isAfter(ejercicio.fechaLimite))}">
+                            Pendiente</span>
+                    </td>
+
+                    <!-- Acción -->
+                    <td>
+                        <!-- Ejercicio no entregado y plazo abierto (o sin límite) -->
+                        <a th:if="${!ejerciciosEntregados.contains(ejercicio.id)}
+                                   and ${(ejercicio.fechaLimite == null) or (!#temporals.createNow().isAfter(ejercicio.fechaLimite))}"
+                           th:href="@{'/alumno/ejercicio/' + ${ejercicio.id}}"
+                           class="btn btn-primary btn-sm">Resolver</a>
+
+                        <!-- Ya entregado -->
+                        <button th:if="${ejerciciosEntregados.contains(ejercicio.id)}"
+                                class="btn btn-secondary btn-sm" disabled>Enviado</button>
+
+                        <!-- Vencido sin entregar -->
+                        <button th:if="${!ejerciciosEntregados.contains(ejercicio.id)}
+                                        and ${ejercicio.fechaLimite != null}
+                                        and ${#temporals.createNow().isAfter(ejercicio.fechaLimite)}"
+                                class="btn btn-danger btn-sm" disabled>Plazo cerrado</button>
+                    </td>
+
+                </tr>
+            </tbody>
+
+        </table>
+
+        <a href="/alumno" class="btn btn-secondary">Volver</a>
+
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
